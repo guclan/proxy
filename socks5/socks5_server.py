@@ -93,12 +93,12 @@ def handle_client_connect(conn):
     handle_tcp(client, remote)
 
 
-def start_server():
+def start_server(ip_addr:str, ip_port:int):
     server = socket(AF_INET, SOCK_STREAM)
-    server.bind(('0.0.0.0', 11001))
+    server.bind((ip_addr, ip_port))
     server.listen(1000)
 
-    print("server listening on port: %d" % 11001)
+    print("server listening on port: %d" % ip_port)
     return server
 
 
@@ -113,5 +113,5 @@ def loop_forever(started_server):
 
 
 if __name__ == '__main__':
-    server = start_server()
+    server = start_server("0.0.0.0", 11030)
     loop_forever(server)
