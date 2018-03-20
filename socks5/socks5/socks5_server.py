@@ -9,6 +9,7 @@ import struct
 from socket import *
 from selectors import *
 import select
+import threading
 import socks5.socks as SOCKS
 
 
@@ -88,7 +89,7 @@ def handle_client_connect(conn):
     remote = socket(AF_INET, SOCK_STREAM)
     remote.connect((remote_addr, remote_port))
 
-    reply = b"\x05\x00\x00\x01" + inet_aton("0.0.0.0") + struct.pack(">H", 2222)
+    reply = SOCKS.SOCKS_VERSION_5 + SOCKS.REP_UNAVAILABLE_ATYP + SOCKS.RSV + SOCKS.ATYP_IPV4 + inet_aton("0.0.0.0") + struct.pack(">H", 2222)
     client.send(reply)
     handle_tcp(client, remote)
 
@@ -102,9 +103,14 @@ def start_server(ip_addr:str, ip_port:int):
     return server
 
 
+def thread_socks_connect(conn):
+    t = threading.Thread(target=handle_client_connect, args=(conn, ))
+    t.start()
+
+
 def loop_forever(started_server):
     selector = DefaultSelector()
-    selector.register(started_server, EVENT_READ, handle_client_connect)
+    selector.register(started_server, EVENT_READ, thread_socks_connect)
     while True:
         ready = selector.select()
         for key, event in ready:
