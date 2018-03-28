@@ -12,8 +12,7 @@ from socket import *
 from selectors import *
 import select
 import threading
-import socks as socks5
-
+from .socks import *
 # 根据系统判断日志存储的路径 windows 存储在上级目录的.log中
 # Linux等系统存储在log中统一管理
 if platform.system() == 'Windows':
@@ -95,7 +94,7 @@ def handle_client_connect(conn):
     # 根据methods的长度获取methods
     methods = client.recv(ord(methods))
     # 发送给客户端当前服务端版本和支持的验证类型
-    client.send(socks5.SOCKS_VERSION_5 + socks5.METHOD_NO_AUTH)
+    client.send(SOCKS_VERSION_5 + METHOD_NO_AUTH)
     # 服务端接收socks版本 cmd命令码 ip类型
     ver, cmd, rsv, atype = client.recv(1), client.recv(1), client.recv(1), client.recv(1)
 
@@ -114,7 +113,7 @@ def handle_client_connect(conn):
         remote_port = struct.unpack(">H", client.recv(2))[0]
     # 其他情况拒绝连接
     else:
-        reply = socks5.SOCKS_VERSION_5 + socks5.REP_UNAVAILABLE_ATYP + socks5.RSV + socks5.ATYP_IPV4 + inet_aton(
+        reply = SOCKS_VERSION_5 + REP_UNAVAILABLE_ATYP + RSV + ATYP_IPV4 + inet_aton(
             "0.0.0.0") + struct.pack(">H", 2222)
         logger.info("IP version is not IPV4, refused connect......")
         client.send(reply)
@@ -130,7 +129,7 @@ def handle_client_connect(conn):
     logger.info("Connect to remote addr : %s:%s".format(remote_addr, remote_port))
 
     # 请求成功 继续发送数据
-    reply = socks5.SOCKS_VERSION_5 + socks5.REP_SUCCESS + socks5.RSV + socks5.ATYP_IPV4 + inet_aton(
+    reply = SOCKS_VERSION_5 + REP_SUCCESS + RSV + ATYP_IPV4 + inet_aton(
         "0.0.0.0") + struct.pack(">H", 2222)
     client.send(reply)
     # 在客户端和服务端之间传输数据
