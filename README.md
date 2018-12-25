@@ -1,2 +1,2 @@
-# killproxy
-Implementation of agents.
+# Proxy Server
+Implementation of proxy.
